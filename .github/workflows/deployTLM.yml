@@ -1,0 +1,26 @@
+name: Deploy Java App
+
+on:
+  push:
+    branches:
+      - main  # Triggers deployment on push to main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Deploy to EC2
+      run: |
+        echo "${{ secrets.EC2_SSH_KEY }}" > private_key.pem
+        chmod 600 private_key.pem
+
+        ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@YOUR_EC2_PUBLIC_IP << 'EOF'
+          /home/ec2-user/deploy.sh
+        EOF
+
+      env:
+        EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
